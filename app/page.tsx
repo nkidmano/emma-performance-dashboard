@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -41,6 +40,15 @@ export default function Dashboard() {
   const [selectedDeviceType, setSelectedDeviceType] = useState('mobile');
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [urls, setUrls] = useState<string[]>([]);
+
+  const sortedUrls = urls.sort((a, z) => {
+    const urlA = new URL(a);
+    const urlZ = new URL(z);
+    if (urlA.origin === urlZ.origin) {
+      return urlA.pathname.localeCompare(urlZ.pathname);
+    }
+    return urlA.origin.localeCompare(urlZ.origin);
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -206,6 +214,25 @@ export default function Dashboard() {
     return `${roundedValue}s`;
   };
 
+  const formatUrlName = (_url: string): string => {
+    const url = new URL(_url);
+    if (url.origin.includes('emma-sleep-japan.com')) {
+      if (url.pathname === '/') return '(JP) Home';
+      if (url.pathname.includes('/products')) return '(JP) Product';
+      if (url.pathname.includes('/collections/mattresses')) return '(JP) Category';
+      if (url.pathname.includes('/pages/sale')) return '(JP) Sale';
+    }
+
+    if (url.origin.includes('emma-sleep.com.ph')) {
+      if (url.pathname === '/') return '(PH) Home';
+      if (url.pathname.includes('/products')) return '(PH) Product';
+      if (url.pathname.includes('/collections/mattresses')) return '(PH) Category';
+      if (url.pathname.includes('/collections/sale')) return '(PH) Sale';
+    }
+
+    return url.href
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -226,9 +253,9 @@ export default function Dashboard() {
             onChange={(e) => setSelectedUrl(e.target.value)}
             className="border rounded px-3 py-1"
           >
-            {urls.map(url => (
+            {sortedUrls.map(url => (
               <option key={url} value={url}>
-                {url.replace('https://', '').replace('http://', '').split('/')[0]}
+                {formatUrlName(url)}
               </option>
             ))}
           </select>
