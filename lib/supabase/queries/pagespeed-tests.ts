@@ -1,8 +1,11 @@
 import { PageSpeedPerformanceResponse } from '@/types/pagespeed-insight'
 import { PageSpeedDeviceType } from '@/types/pagespeed'
-import { supabase } from '@/lib/supabase/client'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/schema'
 
-export async function createPageSpeedTest(performance: PageSpeedPerformanceResponse, deviceType: PageSpeedDeviceType) {
+type Client = SupabaseClient<Database>
+
+export async function createPageSpeedTest(supabase: Client, performance: PageSpeedPerformanceResponse, deviceType: PageSpeedDeviceType) {
   const { data, error } = await supabase
     .from('pagespeed_tests')
     .insert({

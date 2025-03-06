@@ -1,6 +1,9 @@
-import { supabase } from '@/lib/supabase/client'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/schema'
 
-export async function createPageSpeedMetrics(metrics: any) {
+type Client = SupabaseClient<Database>
+
+export async function createPageSpeedMetrics(supabase: Client, metrics: any) {
   const { data, error } = await supabase
     .from('pagespeed_metrics')
     .insert(metrics)

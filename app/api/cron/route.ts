@@ -7,8 +7,8 @@ import {
 export const maxDuration = 60
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
 import { PageSpeedDeviceType } from '@/types/pagespeed'
+import { createApiClient } from '@/lib/supabase/api'
 
 interface DistributionItem {
   min: number;
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const data = await fetchPageSpeedData(url, strategy);
 
     // Store data in Supabase
-    const result = await storePageSpeedData(supabase, data, strategy as PageSpeedDeviceType);
+    const result = await storePageSpeedData(data, strategy as PageSpeedDeviceType);
 
     return NextResponse.json(result);
   } catch (error: any) {
@@ -79,9 +79,10 @@ async function fetchPageSpeedData(url: string, strategy: string = 'mobile'): Pro
   return await response.json();
 }
 
-async function storePageSpeedData(supabase: any, data: PageSpeedResponse, deviceType: PageSpeedDeviceType) {
-  // 1. First, insert the test record
-  const { data: testData, error: testError } = await createPageSpeedTest(data, deviceType);
+async function storePageSpeedData(data: PageSpeedResponse, deviceType: PageSpeedDeviceType) {
+  const supabase = createApiClient()
+
+  const { data: testData, error: testError } = await createPageSpeedTest(supabase, data, deviceType);
 
   if (testError) throw new Error(`Error inserting test data: ${testError.message}`);
 
@@ -150,7 +151,7 @@ async function storePageSpeedData(supabase: any, data: PageSpeedResponse, device
   }
 
   // Insert all metrics
-  const { data: metricsData, error: metricsError } = await createPageSpeedMetrics(metricsToInsert);
+  const { data: metricsData, error: metricsError } = await createPageSpeedMetrics(supabase, metricsToInsert);
 
   if (metricsError) throw new Error(`Error inserting metrics: ${metricsError.message}`);
 
@@ -193,7 +194,7 @@ async function storePageSpeedData(supabase: any, data: PageSpeedResponse, device
   }
 
   // Insert all distributions
-  const { data: distributionsData, error: distributionsError } = await createPageSpeedDistribution(distributionsToInsert);
+  const { data: distributionsData, error: distributionsError } = await createPageSpeedDistribution(supabase, distributionsToInsert);
 
   if (distributionsError) throw new Error(`Error inserting distributions: ${distributionsError.message}`);
 

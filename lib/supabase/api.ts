@@ -1,19 +1,9 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { Database } from '@/lib/supabase/schema'
-import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const createApiClient = () => {
-  return createRouteHandlerClient<Database>({ cookies });
+  return createClient<Database>(supabaseUrl, supabaseAnonKey)
 }
-
-// Helper for checking authentication
-export const requireAuth = async () => {
-  const supabase = createApiClient();
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
-
-  return session;
-};
