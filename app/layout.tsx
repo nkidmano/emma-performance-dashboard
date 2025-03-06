@@ -19,12 +19,14 @@ export const metadata: Metadata = {
   description: "Emma tracking performance report from pagespeed",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+interface RootLayoutProps {
+  children: Readonly<React.ReactNode>;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Layout>
           {children}
         </Layout>

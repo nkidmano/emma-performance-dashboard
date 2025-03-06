@@ -1,6 +1,12 @@
-// app/api/collect-pagespeed/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase/client'
+import {
+  createPageSpeedDistribution,
+  createPageSpeedMetrics,
+  createPageSpeedTest,
+} from '@/lib/supabase/queries'
+import { PageSpeedDeviceType } from '@/types/pagespeed'
+import { getPageSpeedSummaryTests } from '@/lib/supabase/queries/pagespeed-summary'
 
 // Types for PageSpeed API response
 interface DistributionItem {
@@ -38,14 +44,7 @@ interface PageSpeedResponse {
 export async function GET(request: NextRequest) {
   try {
     // Fetch all data from the pagespeed_summary view
-    const { data, error } = await supabase
-      .from('pagespeed_summary')
-      .select('*')
-      .order('test_date', { ascending: false });
-
-    if (error) {
-      throw new Error(`Error fetching data: ${error.message}`);
-    }
+    const { data, error } = await getPageSpeedSummaryTests();
 
     // Format the data to be more frontend-friendly
     const formattedData = data?.map(row => {
@@ -131,22 +130,13 @@ async function fetchPageSpeedData(url: string, strategy: string = 'mobile'): Pro
   return await response.json();
 }
 
-async function storePageSpeedData(supabase: any, data: PageSpeedResponse, deviceType: string) {
+async function storePageSpeedData(supabase: any, data: PageSpeedResponse, deviceType: PageSpeedDeviceType) {
   // 1. First, insert the test record
-  const { data: testData, error: testError } = await supabase
-    .from('pagespeed_tests')
-    .insert({
-      url: data.id,
-      test_date: data.analysisUTCTimestamp,
-      device_type: deviceType,
-      overall_category: data.loadingExperience.overall_category,
-      raw_data: data // Store the full JSON response
-    })
-    .select();
+  const { data: testData, error: testError } = await createPageSpeedTest(data, deviceType);
 
   if (testError) throw new Error(`Error inserting test data: ${testError.message}`);
 
-  const testId = testData[0].id;
+  const testId = testData![0].id;
 
   // 2. Insert metrics
   const metricsToInsert = [];
@@ -211,17 +201,14 @@ async function storePageSpeedData(supabase: any, data: PageSpeedResponse, device
   }
 
   // Insert all metrics
-  const { data: metricsData, error: metricsError } = await supabase
-    .from('pagespeed_metrics')
-    .insert(metricsToInsert)
-    .select();
+  const { data: metricsData, error: metricsError } = await createPageSpeedMetrics(metricsToInsert)
 
   if (metricsError) throw new Error(`Error inserting metrics: ${metricsError.message}`);
 
   // 3. Insert distributions for each metric
   const distributionsToInsert = [];
 
-  for (const metric of metricsData) {
+  for (const metric of metricsData!) {
     const metricName = metric.metric_name;
     const metricId = metric.id;
     const distributions = metricDistributions.get(metricName);
@@ -257,9 +244,7 @@ async function storePageSpeedData(supabase: any, data: PageSpeedResponse, device
   }
 
   // Insert all distributions
-  const { data: distributionsData, error: distributionsError } = await supabase
-    .from('pagespeed_distributions')
-    .insert(distributionsToInsert);
+  const { data: distributionsData, error: distributionsError } = await createPageSpeedDistribution(distributionsToInsert);
 
   if (distributionsError) throw new Error(`Error inserting distributions: ${distributionsError.message}`);
 

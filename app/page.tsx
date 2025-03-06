@@ -27,12 +27,6 @@ interface PageSpeedReport {
   }
 }
 
-interface Event {
-  date: string;
-  value: number;
-  label: string;
-}
-
 export default function Dashboard() {
   const [reportsData, setReportsData] = useState<PageSpeedReport[]>([]);
   const [loading, setLoading] = useState(true);
