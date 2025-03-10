@@ -47,38 +47,45 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await getPageSpeedSummaryTests(supabase);
 
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
     // Format the data to be more frontend-friendly
-    const formattedData = data?.map(row => {
-      return {
-        id: row.test_id,
-        url: row.url,
-        test_date: row.test_date,
-        device_type: row.device_type,
-        overall_category: row.overall_category,
-        metrics: {
-          LCP: {
-            value: row.lcp,
-            category: row.lcp_category
-          },
-          CLS: {
-            value: row.cls,
-            category: row.cls_category
-          },
-          FCP: {
-            value: row.fcp,
-            category: row.fcp_category
-          },
-          TTFB: {
-            value: row.ttfb,
-            category: row.ttfb_category
-          },
-          INP: {
-            value: row.inp,
-            category: row.inp_category
-          }
+    const formattedData = data?.map(row => ({
+      id: row.test_id,
+      url: row.url,
+      test_date: row.test_date,
+      device_type: row.device_type,
+      overall_category: row.overall_category,
+      metrics: {
+        LCP: {
+          value: row.lcp,
+          category: row.lcp_category,
+          distribution: row.lcp_distribution
+        },
+        CLS: {
+          value: row.cls,
+          category: row.cls_category,
+          distribution: row.cls_distribution
+        },
+        FCP: {
+          value: row.fcp,
+          category: row.fcp_category,
+          distribution: row.fcp_distribution
+        },
+        TTFB: {
+          value: row.ttfb,
+          category: row.ttfb_category,
+          distribution: row.ttfb_distribution
+        },
+        INP: {
+          value: row.inp,
+          category: row.inp_category,
+          distribution: row.inp_distribution
         }
-      };
-    });
+      }
+    }));
 
     return NextResponse.json({ data: formattedData });
   } catch (error: any) {

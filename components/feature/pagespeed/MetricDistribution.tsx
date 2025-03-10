@@ -55,10 +55,6 @@ export function MetricDistribution({ metricData, metricName, metricFullName, thr
       return value.toFixed(2)
     }
 
-    if (value < 1000) {
-      return `${value}${metricUnit} ms`
-    }
-
     return `${(value / 1000).toFixed(1)} s`
   }
 
@@ -70,9 +66,9 @@ export function MetricDistribution({ metricData, metricName, metricFullName, thr
 
     if (percentile < min || (max && percentile > max)) return null
     return (
-      <div style={{ left: `${(percentile / (max ?? min)) * 100}%` }} className="absolute transform -top-[23px] -translate-x-1/2 z-[10]">
-        <p className={`leading-none text-xs ${percentileCategory.name === 'Good' ? 'text-green-800' : percentileCategory.name === 'Improvement' ? 'text-yellow-800' : 'text-red-800'}`}>{formatValue(percentile)}</p>
-        <Pin />
+      <div style={{ left: `${(percentile / (max ?? min)) * 100}%` }} className="absolute transform w-[40px] -top-[23px] -translate-x-1/2 z-[10]">
+        <p className={`leading-none text-xs text-center ${percentileCategory.name === 'Good' ? 'text-green-800' : percentileCategory.name === 'Improvement' ? 'text-yellow-800' : 'text-red-800'}`}>{formatValue(percentile)}</p>
+        <div className="flex justify-center"><Pin /></div>
       </div>
     )
   }

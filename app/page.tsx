@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine
 } from 'recharts';
 import { format, parseISO } from 'date-fns';
+import { MetricDistribution } from '@/components/feature/pagespeed/MetricDistribution'
+import { CORE_WEB_VITALS_THRESHOLDS } from '@/lib/constants'
 
 interface MetricData {
   value: number;
@@ -34,6 +36,7 @@ export default function Dashboard() {
   const [selectedDeviceType, setSelectedDeviceType] = useState('mobile');
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [urls, setUrls] = useState<string[]>([]);
+  const [selectedReportId, setSelectedReportId] = useState<number | null>(null)
 
   const sortedUrls = urls.sort((a, z) => {
     const urlA = new URL(a);
@@ -48,6 +51,7 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
+
         const response = await fetch(`/api/reports?url=${selectedUrl}&deviceType=${selectedDeviceType}`);
         if (!response.ok) {
           throw new Error(`Error fetching data: ${response.statusText}`);
@@ -100,6 +104,7 @@ export default function Dashboard() {
   // Prepare chart data for time-based metrics
   const timeMetricsChartData = filteredData.map(report => {
     return {
+      id: report.id,
       date: report.test_date,
       formattedDate: format(parseISO(report.test_date), 'MMM d'),
       LCP: report.metrics.LCP.value / 1000, // Convert to seconds
@@ -174,31 +179,6 @@ export default function Dashboard() {
     return null;
   };
 
-  // Custom dot component for events
-  const CustomDot = (props: any) => {
-    const { cx, cy, payload } = props;
-
-    if (payload.event) {
-      return (
-        <g>
-          <circle cx={cx} cy={cy} r={4} fill="#666" />
-          <circle cx={cx} cy={cy} r={8} fill="#666" fillOpacity={0.3} />
-          <text
-            x={cx}
-            y={cy - 15}
-            textAnchor="middle"
-            fill="#666"
-            fontSize={12}
-            fontWeight="bold"
-          >
-            {payload.event}
-          </text>
-        </g>
-      );
-    }
-    return null;
-  };
-
   const formatYAxisTick = (value: number) => {
     const roundedValue = Math.round(value * 2) / 2;
 
@@ -226,6 +206,54 @@ export default function Dashboard() {
 
     return url.href
   }
+
+  const extractDistributionMetrics = (data: any) => {
+    if (!data) return {}
+
+    const metrics = data.metrics
+    return {
+      LCP: {
+        name: 'Largest Contentful Paint',
+        metrics: {
+          percentile: metrics.LCP.distribution.percentile,
+          distributions: metrics.LCP.distribution.distributions,
+        },
+      },
+      INP: {
+        name: 'Interaction to Next Paint',
+        metrics: {
+          percentile: metrics.INP.distribution.percentile,
+          distributions: metrics.INP.distribution.distributions,
+        },
+      },
+      CLS: {
+        name: 'Cumulative Layout Shift',
+        metrics: {
+          percentile: metrics.CLS.distribution.percentile,
+          distributions: metrics.CLS.distribution.distributions.map((stat: any) => ({ ...stat, min: stat.min * 100, max: stat.max ? stat.max * 100: null })),
+        },
+      },
+      FCP: {
+        name: 'First Contentful Paint',
+        metrics: {
+          percentile: metrics.FCP.distribution.percentile,
+          distributions: metrics.FCP.distribution.distributions,
+        },
+      },
+      TTFB: {
+        name: 'Time to First Byte',
+        metrics: {
+          percentile: metrics.TTFB.distribution.percentile,
+          distributions: metrics.TTFB.distribution.distributions,
+        },
+      },
+    }
+  }
+
+  const data = filteredData.find(data => data.id === selectedReportId)
+  const metrics = extractDistributionMetrics(data)
+  console.log('data', data)
+  console.log('metrics', metrics)
 
   return (
     <div className="space-y-8">
@@ -256,6 +284,26 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {metrics && (
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+            <p>Core Web Vitals & Metrics</p>
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {Object.entries(metrics).map(([key, value]) => (
+              <MetricDistribution
+                key={key}
+                metricName={key}
+                metricFullName={value.name}
+                metricUnit=""
+                metricData={value.metrics}
+                thresholds={CORE_WEB_VITALS_THRESHOLDS[key as keyof typeof CORE_WEB_VITALS_THRESHOLDS]}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Time-based metrics chart */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-bold mb-6">
@@ -265,6 +313,7 @@ export default function Dashboard() {
         <div className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
+              onClick={(data) => setSelectedReportId(data?.activePayload?.[0]?.payload?.id)}
               data={timeMetricsChartData}
               margin={{ top: 30, right: 30, left: 20, bottom: 5 }}
             >
