@@ -5,7 +5,7 @@ export type PageSpeedDistributionSchema = {
   min_value: number;
   max_value: number;
   proportion: number;
-}
+};
 
 export type PageSpeedMetricSchema = {
   id: number;
@@ -13,7 +13,7 @@ export type PageSpeedMetricSchema = {
   metric_name: string;
   percentile: number;
   category: string;
-}
+};
 
 export type PageSpeedTestSchema = {
   id: number;
@@ -21,7 +21,7 @@ export type PageSpeedTestSchema = {
   test_date: Date;
   device_type: string;
   overall_category: string;
-}
+};
 
 export interface Database {
   public: {
@@ -41,6 +41,6 @@ export interface Database {
         Insert: PageSpeedDistributionSchema;
         Update: Partial<PageSpeedDistributionSchema>;
       };
-    }
-  }
+    };
+  };
 }

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import React from 'react'
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import React from "react";
+import { usePathname } from "next/navigation";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function MainLayout({ children }: LayoutProps) {
   const pathname = usePathname();
 
   return (
@@ -18,15 +18,14 @@ export default function Layout({ children }: LayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
-
               {/* Navigation Links */}
               <div className="flex items-center space-x-4">
                 <Link
-                  href="/"
+                  href="/public"
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    pathname === '/'
-                      ? 'bg-blue-500 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                    pathname === "/"
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
                   Metrics
@@ -34,9 +33,9 @@ export default function Layout({ children }: LayoutProps) {
                 <Link
                   href="/pagespeed"
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    pathname === '/pagespeed'
-                      ? 'bg-blue-500 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                    pathname === "/pagespeed"
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
                   Page Speed
