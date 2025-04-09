@@ -1,2 +1,3 @@
-export const homePath = () => "/home";
+export const homePath = () => "/";
 export const signInPath = () => "/sign-in";
+export const performancePath = () => "/performance";

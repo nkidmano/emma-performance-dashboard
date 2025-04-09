@@ -2,7 +2,6 @@ import React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import MainLayout from "@/components/main-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,13 +22,15 @@ interface RootLayoutProps {
   children: Readonly<React.ReactNode>;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html suppressHydrationWarning lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <MainLayout>{children}</MainLayout>
+        <main className="min-h-screen flex-1 overflow-y-auto overflow-x-hidden py-12 px-8 bg-secondary/20 flex flex-col">
+          {children}
+        </main>
       </body>
     </html>
   );
