@@ -22,13 +22,13 @@ export function Pin(props: PinProps) {
         <rect fill="white" x="3" width="10" height="16" />
         <path
           fillRule="evenodd"
-          clip-rule="evenodd"
+          clipRule="evenodd"
           d="M8.5 7.95852C9.91886 7.72048 11 6.4865 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.4865 6.08114 7.72048 7.5 7.95852V14H8.5V7.95852Z"
         />
       </mask>
       <path
         fillRule="evenodd"
-        clip-rule="evenodd"
+        clipRule="evenodd"
         d="M8.5 7.95852C9.91886 7.72048 11 6.4865 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.4865 6.08114 7.72048 7.5 7.95852V14H8.5V7.95852Z"
         fill="#5F6368"
       />

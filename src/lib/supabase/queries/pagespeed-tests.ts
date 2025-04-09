@@ -11,7 +11,7 @@ export async function createPageSpeedTest(
   deviceType: PageSpeedDeviceType,
 ) {
   const { data, error } = await supabase
-    .from("pagespeed_tests")
+    .from("PagespeedTests")
     .insert({
       url: performance.id,
       test_date: performance.analysisUTCTimestamp,

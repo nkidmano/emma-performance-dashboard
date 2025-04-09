@@ -3,10 +3,13 @@ import { Database } from "@/lib/supabase/schema";
 
 type Client = SupabaseClient<Database>;
 
-export async function createPageSpeedMetrics(supabase: Client, metrics: any) {
+export async function createPageSpeedDistribution(
+  supabase: Client,
+  distribution: any,
+) {
   const { data, error } = await supabase
-    .from("pagespeed_metrics")
-    .insert(metrics)
+    .from("PagespeedDistribution")
+    .insert(distribution)
     .select();
 
   return { data, error };
