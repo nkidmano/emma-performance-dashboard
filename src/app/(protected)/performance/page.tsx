@@ -15,6 +15,14 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface MetricData {
   value: number;
@@ -36,6 +44,10 @@ interface PagespeedReport {
   };
 }
 
+const LIMIT_REPORT_DAYS = 14;
+const LIMIT_REPORT_WEEKS = 6;
+const DAYS_PER_WEEK = 7;
+
 export default function PerformancePage() {
   const [reportsData, setReportsData] = useState<PagespeedReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +56,7 @@ export default function PerformancePage() {
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [urls, setUrls] = useState<string[]>([]);
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<"daily" | "weekly">("daily");
 
   const sortedUrls = urls.sort((a, z) => {
     const urlA = new URL(a);
@@ -117,30 +130,140 @@ export default function PerformancePage() {
     .sort(
       (a, b) =>
         new Date(a.test_date).getTime() - new Date(b.test_date).getTime(),
+    )
+    .slice(
+      0,
+      viewMode === "daily"
+        ? LIMIT_REPORT_DAYS
+        : LIMIT_REPORT_WEEKS * DAYS_PER_WEEK,
     );
 
-  // Prepare chart data for time-based metrics
-  const timeMetricsChartData = filteredData.map((report) => {
-    return {
-      id: report.id,
-      date: report.test_date,
-      formattedDate: format(parseISO(report.test_date), "MMM d"),
-      LCP: report.metrics.LCP.value / 1000, // Convert to seconds
-      FCP: report.metrics.FCP.value / 1000,
-      TTFB: report.metrics.TTFB.value / 1000,
-      INP: report.metrics.INP.value / 1000,
-    };
-  });
+  // Prepare chart data based on the selected view mode
+  const prepareChartData = () => {
+    if (viewMode === "daily") {
+      // Daily view - original implementation
+      const timeMetricsData = filteredData.map((report) => {
+        return {
+          id: report.id,
+          date: report.test_date,
+          formattedDate: format(parseISO(report.test_date), "MMM d"),
+          LCP: report.metrics.LCP.value / 1000, // Convert to seconds
+          FCP: report.metrics.FCP.value / 1000,
+          TTFB: report.metrics.TTFB.value / 1000,
+          INP: report.metrics.INP.value / 1000,
+        };
+      });
 
-  // Prepare chart data for CLS
-  const clsChartData = filteredData.map((report) => {
-    return {
-      date: report.test_date,
-      formattedDate: format(parseISO(report.test_date), "MMM d"),
-      CLS: report.metrics.CLS.value,
-      category: report.metrics.CLS.category,
-    };
-  });
+      const clsData = filteredData.map((report) => {
+        return {
+          id: report.id,
+          date: report.test_date,
+          formattedDate: format(parseISO(report.test_date), "MMM d"),
+          CLS: report.metrics.CLS.value,
+          category: report.metrics.CLS.category,
+        };
+      });
+
+      return { timeMetricsChartData: timeMetricsData, clsChartData: clsData };
+    } else {
+      // Weekly view - group data by week
+      const weeklyData = new Map();
+      const weeklyCLSData = new Map();
+
+      filteredData.forEach((report) => {
+        const date = parseISO(report.test_date);
+
+        // Calculate week of month (1-based)
+        const firstDayOfMonth = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          1,
+        );
+        const dayOfWeekOfFirstDay = firstDayOfMonth.getDay() || 7; // Convert Sunday (0) to 7
+        const dayOfMonth = date.getDate();
+        const weekOfMonth = Math.ceil(
+          (dayOfMonth + dayOfWeekOfFirstDay - 1) / 7,
+        );
+
+        // Get month name
+        const monthName = format(date, "MMMM");
+
+        // Format as "Week X Month"
+        const formattedWeek = `Week ${weekOfMonth} ${monthName}`;
+
+        // Use year, month and week of month as the key
+        const monthYearKey = format(date, "yyyy-MM"); // e.g. "2025-03" for March 2025
+        const weekKey = `${monthYearKey}-W${weekOfMonth}`;
+
+        if (!weeklyData.has(weekKey)) {
+          weeklyData.set(weekKey, {
+            weekLabel: formattedWeek,
+            formattedDate: formattedWeek,
+            reports: [],
+            LCP: 0,
+            FCP: 0,
+            TTFB: 0,
+            INP: 0,
+            count: 0,
+          });
+        }
+
+        if (!weeklyCLSData.has(weekKey)) {
+          weeklyCLSData.set(weekKey, {
+            weekLabel: formattedWeek,
+            formattedDate: formattedWeek,
+            CLS: 0,
+            count: 0,
+            reports: [],
+          });
+        }
+
+        const weekData = weeklyData.get(weekKey);
+        weekData.LCP += report.metrics.LCP.value / 1000;
+        weekData.FCP += report.metrics.FCP.value / 1000;
+        weekData.TTFB += report.metrics.TTFB.value / 1000;
+        weekData.INP += report.metrics.INP.value / 1000;
+        weekData.count += 1;
+        weekData.reports.push(report.id);
+
+        const weekCLSData = weeklyCLSData.get(weekKey);
+        weekCLSData.CLS += report.metrics.CLS.value;
+        weekCLSData.count += 1;
+        weekCLSData.reports.push(report.id);
+      });
+
+      // Calculate averages
+      const timeMetricsWeeklyData = Array.from(weeklyData.values()).map(
+        (data) => ({
+          weekLabel: data.weekLabel,
+          formattedDate: data.formattedDate,
+          LCP: data.count > 0 ? data.LCP / data.count : 0,
+          FCP: data.count > 0 ? data.FCP / data.count : 0,
+          TTFB: data.count > 0 ? data.TTFB / data.count : 0,
+          INP: data.count > 0 ? data.INP / data.count : 0,
+          count: data.count,
+          reports: data.reports,
+        }),
+      );
+
+      const clsWeeklyData = Array.from(weeklyCLSData.values()).map((data) => ({
+        weekLabel: data.weekLabel,
+        formattedDate: data.formattedDate,
+        CLS: data.count > 0 ? data.CLS / data.count : 0,
+        count: data.count,
+        reports: data.reports,
+      }));
+
+      return {
+        timeMetricsChartData: timeMetricsWeeklyData,
+        clsChartData: clsWeeklyData,
+      };
+    }
+  };
+
+  const { timeMetricsChartData, clsChartData } = prepareChartData();
+  console.log("data", filteredData);
+  console.log("cls", clsChartData);
 
   // Get metric friendly names
   const getMetricFriendlyName = (metric: string) => {
@@ -171,6 +294,9 @@ export default function PerformancePage() {
           <p className="text-[#ff7c43]">FCP: {data.FCP.toFixed(2)}s</p>
           <p className="text-[#665191]">TTFB: {data.TTFB.toFixed(2)}s</p>
           <p className="text-[#2ab7ca]">INP: {data.INP.toFixed(2)}s</p>
+          {viewMode === "weekly" && (
+            <p className="text-gray-600 mt-1">Samples: {data.count}</p>
+          )}
           {data.event && (
             <p className="text-gray-600 mt-1">Event: {data.event}</p>
           )}
@@ -188,8 +314,12 @@ export default function PerformancePage() {
         <div className="bg-white p-3 border rounded shadow-lg">
           <p className="font-semibold">{data.formattedDate}</p>
           <p className="text-[#f95d6a]">
-            CLS: {data.CLS.toFixed(2)} ({data.category})
+            CLS: {data.CLS.toFixed(2)}{" "}
+            {viewMode === "daily" && `(${data.category})`}
           </p>
+          {viewMode === "weekly" && (
+            <p className="text-gray-600 mt-1">Samples: {data.count}</p>
+          )}
           {data.event && (
             <p className="text-gray-600 mt-1">Event: {data.event}</p>
           )}
@@ -294,34 +424,41 @@ export default function PerformancePage() {
         <h1 className="text-2xl font-bold mb-4 sm:mb-0">Pagespeed Metrics</h1>
 
         <div className="flex flex-wrap gap-3">
-          <select
-            value={selectedDeviceType}
-            onChange={(e) => setSelectedDeviceType(e.target.value)}
-            className="border rounded px-3 py-1"
-          >
-            <option value="mobile">Mobile</option>
-            <option value="desktop">Desktop</option>
-          </select>
-
-          <select
+          <Select
             value={selectedUrl || ""}
-            onChange={(e) => setSelectedUrl(e.target.value)}
-            className="border rounded px-3 py-1"
+            defaultValue={selectedUrl || ""}
+            onValueChange={(value) => setSelectedUrl(value)}
           >
-            {sortedUrls.map((url) => (
-              <option key={url} value={url}>
-                {formatUrlName(url)}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select page" />
+            </SelectTrigger>
+            <SelectContent>
+              {sortedUrls.map((url) => (
+                <SelectItem key={url} value={url}>
+                  {formatUrlName(url)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={viewMode}
+            defaultValue={viewMode}
+            onValueChange={(value) => setViewMode(value as "daily" | "weekly")}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select timeline" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {metrics && (
         <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-            <p>Core Web Vitals & Metrics</p>
-          </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {Object.entries(metrics).map(([key, value]) => (
               <MetricDistribution
@@ -342,17 +479,24 @@ export default function PerformancePage() {
       )}
 
       {/* Time-based metrics chart */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold mb-6">
-          Time-based Metrics over time (seconds)
-        </h2>
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>
+            Metrics {viewMode === "weekly" ? "weekly" : "over time"}
+          </CardTitle>
+        </CardHeader>
 
-        <div className="h-[400px]">
+        <CardContent className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              onClick={(data) =>
-                setSelectedReportId(data?.activePayload?.[0]?.payload?.id)
-              }
+              onClick={(data) => {
+                if (
+                  viewMode === "daily" &&
+                  data?.activePayload?.[0]?.payload?.id
+                ) {
+                  setSelectedReportId(data.activePayload[0].payload.id);
+                }
+              }}
               data={timeMetricsChartData}
               margin={{ top: 30, right: 30, left: 20, bottom: 5 }}
             >
@@ -380,7 +524,7 @@ export default function PerformancePage() {
                 dataKey="LCP"
                 stroke="#00aae7"
                 strokeWidth={2}
-                dot={false}
+                dot={viewMode === "weekly"}
                 activeDot={{ r: 6 }}
                 name="LCP"
               />
@@ -389,7 +533,7 @@ export default function PerformancePage() {
                 dataKey="FCP"
                 stroke="#ff7c43"
                 strokeWidth={2}
-                dot={false}
+                dot={viewMode === "weekly"}
                 activeDot={{ r: 6 }}
                 name="FCP"
               />
@@ -398,7 +542,7 @@ export default function PerformancePage() {
                 dataKey="TTFB"
                 stroke="#665191"
                 strokeWidth={2}
-                dot={false}
+                dot={viewMode === "weekly"}
                 activeDot={{ r: 6 }}
                 name="TTFB"
               />
@@ -407,22 +551,25 @@ export default function PerformancePage() {
                 dataKey="INP"
                 stroke="#2ab7ca"
                 strokeWidth={2}
-                dot={false}
+                dot={viewMode === "weekly"}
                 activeDot={{ r: 6 }}
                 name="INP"
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* CLS chart */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold mb-6">
-          {getMetricFriendlyName("CLS")} (CLS) over time
-        </h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {getMetricFriendlyName("CLS")} (CLS){" "}
+            {viewMode === "weekly" ? "weekly" : "over time"}
+          </CardTitle>
+        </CardHeader>
 
-        <div className="h-[400px]">
+        <CardContent className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={clsChartData}
@@ -451,7 +598,7 @@ export default function PerformancePage() {
                 dataKey="CLS"
                 stroke="#f95d6a"
                 strokeWidth={2}
-                dot={false}
+                dot={viewMode === "weekly"}
                 activeDot={{ r: 6 }}
                 name="CLS"
               />
@@ -470,8 +617,8 @@ export default function PerformancePage() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
