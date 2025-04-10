@@ -291,7 +291,7 @@ export default function PerformancePage() {
   return (
     <div className="container mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <h1 className="text-2xl font-bold mb-4 sm:mb-0">PageSpeed Metrics</h1>
+        <h1 className="text-2xl font-bold mb-4 sm:mb-0">Pagespeed Metrics</h1>
 
         <div className="flex flex-wrap gap-3">
           <select

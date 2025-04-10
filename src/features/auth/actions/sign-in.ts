@@ -18,7 +18,7 @@ const signInSchema = z.object({
   username: z
     .string()
     .nonempty({ message: "Username is required" })
-    .min(3, { message: "Username must be at least 3 characters long" })
+    .min(1, { message: "Username must be at least 1 characters long" })
     .max(191, { message: "Username cannot exceed 191 characters" }),
   password: z
     .string()
