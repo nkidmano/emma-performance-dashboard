@@ -1,1 +1,1 @@
-export type PageSpeedDeviceType = "mobile" | "desktop";
+export type PagespeedDeviceType = "mobile" | "desktop";

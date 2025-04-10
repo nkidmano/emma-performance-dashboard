@@ -1,4 +1,4 @@
-export type PageSpeedDistributionItem = {
+export type PagespeedDistributionItem = {
   min: number;
   max?: number;
   proportion: number;
@@ -6,11 +6,11 @@ export type PageSpeedDistributionItem = {
 
 export type MetricData = {
   percentile: number;
-  distributions: PageSpeedDistributionItem[];
+  distributions: PagespeedDistributionItem[];
   category: "FAST" | "AVERAGE" | "SLOW";
 };
 
-export type PageSpeedLoadingExperience = {
+export type PagespeedLoadingExperience = {
   id: string;
   metrics: {
     LARGEST_CONTENTFUL_PAINT_MS?: MetricData;
@@ -23,8 +23,8 @@ export type PageSpeedLoadingExperience = {
   initial_url: string;
 };
 
-export type PageSpeedPerformanceResponse = {
+export type PagespeedPerformanceResponse = {
   id: string;
-  loadingExperience: PageSpeedLoadingExperience;
+  loadingExperience: PagespeedLoadingExperience;
   analysisUTCTimestamp: string;
 };

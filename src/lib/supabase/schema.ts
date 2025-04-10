@@ -1,4 +1,4 @@
-export type PageSpeedDistributionSchema = {
+export type PagespeedDistributionSchema = {
   id: number;
   metric_id: number;
   range_type: string;
@@ -7,7 +7,7 @@ export type PageSpeedDistributionSchema = {
   proportion: number;
 };
 
-export type PageSpeedMetricSchema = {
+export type PagespeedMetricSchema = {
   id: number;
   test_id: number;
   metric_name: string;
@@ -15,7 +15,7 @@ export type PageSpeedMetricSchema = {
   category: string;
 };
 
-export type PageSpeedTestSchema = {
+export type PagespeedTestSchema = {
   id: number;
   url: string;
   test_date: Date;
@@ -27,19 +27,19 @@ export interface Database {
   public: {
     Tables: {
       pagespeed_metrics: {
-        Row: PageSpeedMetricSchema;
-        Insert: PageSpeedMetricSchema;
-        Update: Partial<PageSpeedMetricSchema>;
+        Row: PagespeedMetricSchema;
+        Insert: PagespeedMetricSchema;
+        Update: Partial<PagespeedMetricSchema>;
       };
       pagespeed_tests: {
-        Row: PageSpeedTestSchema;
-        Insert: PageSpeedTestSchema;
-        Update: Partial<PageSpeedTestSchema>;
+        Row: PagespeedTestSchema;
+        Insert: PagespeedTestSchema;
+        Update: Partial<PagespeedTestSchema>;
       };
       pagespeed_distributions: {
-        Row: PageSpeedDistributionSchema;
-        Insert: PageSpeedDistributionSchema;
-        Update: Partial<PageSpeedDistributionSchema>;
+        Row: PagespeedDistributionSchema;
+        Insert: PagespeedDistributionSchema;
+        Update: Partial<PagespeedDistributionSchema>;
       };
     };
   };

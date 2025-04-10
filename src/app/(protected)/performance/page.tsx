@@ -21,7 +21,7 @@ interface MetricData {
   category: string;
 }
 
-interface PageSpeedReport {
+interface PagespeedReport {
   id: number;
   url: string;
   test_date: string;
@@ -37,7 +37,7 @@ interface PageSpeedReport {
 }
 
 export default function PerformancePage() {
-  const [reportsData, setReportsData] = useState<PageSpeedReport[]>([]);
+  const [reportsData, setReportsData] = useState<PagespeedReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDeviceType, setSelectedDeviceType] = useState("mobile");
@@ -72,7 +72,7 @@ export default function PerformancePage() {
 
           // Extract unique URLs
           const uniqueUrls = [
-            ...new Set(result.data.map((item: PageSpeedReport) => item.url)),
+            ...new Set(result.data.map((item: PagespeedReport) => item.url)),
           ] as string[];
           setUrls(uniqueUrls);
 

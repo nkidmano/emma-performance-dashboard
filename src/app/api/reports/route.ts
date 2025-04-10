@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPageSpeedSummaryTests } from "@/lib/supabase/queries/pagespeed-summary";
+import { getPagespeedSummaryTests } from "@/lib/supabase/queries/pagespeed-summary";
 import { createApiClient } from "@/lib/supabase/api";
 
 interface DistributionItem {
@@ -27,7 +27,7 @@ interface LoadingExperience {
   initial_url: string;
 }
 
-interface PageSpeedResponse {
+interface PagespeedResponse {
   id: string;
   loadingExperience: LoadingExperience;
   analysisUTCTimestamp: string;
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createApiClient();
 
-    const { data, error } = await getPageSpeedSummaryTests(supabase);
+    const { data, error } = await getPagespeedSummaryTests(supabase);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -81,9 +81,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: formattedData });
   } catch (error: any) {
-    console.error("Error retrieving PageSpeed reports:", error);
+    console.error("Error retrieving Pagespeed reports:", error);
     return NextResponse.json(
-      { error: "Failed to retrieve PageSpeed reports", message: error.message },
+      { error: "Failed to retrieve Pagespeed reports", message: error.message },
       { status: 500 },
     );
   }

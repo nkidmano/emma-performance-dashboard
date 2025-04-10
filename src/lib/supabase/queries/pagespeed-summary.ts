@@ -3,7 +3,7 @@ import { Database } from "@/lib/supabase/schema";
 
 type Client = SupabaseClient<Database>;
 
-export async function getPageSpeedSummaryTests(supabase: Client) {
+export async function getPagespeedSummaryTests(supabase: Client) {
   const { data, error } = await supabase
     .from("pagespeed_summary")
     .select("*")

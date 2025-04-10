@@ -3,7 +3,7 @@ import { Database } from "@/lib/supabase/schema";
 
 type Client = SupabaseClient<Database>;
 
-export async function createPageSpeedDistribution(
+export async function createPagespeedDistribution(
   supabase: Client,
   distribution: any,
 ) {
