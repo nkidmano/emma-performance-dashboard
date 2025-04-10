@@ -19,7 +19,13 @@ export function toActionState(
   message: string,
   formData?: FormData,
 ): ActionState {
-  return { ...INITIAL_ACTION_STATE, status, message, payload: formData };
+  return {
+    ...INITIAL_ACTION_STATE,
+    status,
+    message,
+    payload: formData,
+    timestamp: Date.now(),
+  };
 }
 
 export function fromErrorToActionState(

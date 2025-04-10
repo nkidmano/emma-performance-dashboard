@@ -14,5 +14,5 @@ export default async function ProtectedLayout({
     redirect(signInPath());
   }
 
-  return <div suppressHydrationWarning>{children}</div>;
+  return <>{children}</>;
 }

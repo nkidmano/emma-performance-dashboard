@@ -12,5 +12,5 @@ export default async function GuestLayout({ children }: GuestLayoutProps) {
     redirect(performancePath());
   }
 
-  return <div suppressHydrationWarning>{children}</div>;
+  return <>{children}</>;
 }

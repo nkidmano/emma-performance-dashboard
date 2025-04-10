@@ -15,28 +15,36 @@ import { homePath } from "@/utils/paths";
 import { createSession } from "@/lib/auth";
 
 const signInSchema = z.object({
-  email: z.string().min(1, { message: "Is required" }).max(191).email(),
-  password: z.string().min(6).max(191),
+  username: z
+    .string()
+    .nonempty({ message: "Username is required" })
+    .min(3, { message: "Username must be at least 3 characters long" })
+    .max(191, { message: "Username cannot exceed 191 characters" }),
+  password: z
+    .string()
+    .nonempty({ message: "Password is required" })
+    .min(6, { message: "Password must be at least 6 characters long" })
+    .max(191, { message: "Password cannot exceed 191 characters" }),
 });
 
 export const signIn = async (_actionState: ActionState, formData: FormData) => {
   try {
-    const { email, password } = signInSchema.parse(
+    const { username, password } = signInSchema.parse(
       Object.fromEntries(formData),
     );
 
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { username },
     });
 
     if (!user) {
-      return toActionState("ERROR", "Incorrect email or password", formData);
+      return toActionState("ERROR", "Incorrect username or password", formData);
     }
 
     const validPassword = await verifyPasswordHash(user.passwordHash, password);
 
     if (!validPassword) {
-      return toActionState("ERROR", "Incorrect email or password", formData);
+      return toActionState("ERROR", "Incorrect username or password", formData);
     }
 
     const sessionToken = generateRandomToken();
