@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Emma Dashboard - Project Document
 
-## Getting Started
+## Project Overview
+The Emma Dashboard is a web application built with Next.js that integrates with Google's PageSpeed Insights API to monitor and analyze website performance metrics. The project uses Supabase for database management and authentication.
 
-First, run the development server:
+## Tech Stack
+- **Frontend**: Next.js, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL (via Supabase)
+- **ORM**: Prisma
+- **Authentication**: Custom implementation with sessions
+- **External APIs**: Google PageSpeed Insights API
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Project Structure
+```
+emma-dashboard/
+├── prisma/              # Database schema and migrations
+├── repositories/        # Database access layer
+├── src/
+│   ├── actions/        # Server actions
+│   ├── app/            # Next.js app router pages
+│   ├── components/     # React components
+│   ├── features/       # Feature-specific code
+│   ├── lib/           # Utility functions and configurations
+│   ├── types/         # TypeScript type definitions
+│   └── utils/         # Helper functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database Schema
+The application uses a PostgreSQL database with the following main models:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### User Management
+- `User`: Stores user credentials and authentication data
+- `Session`: Manages user sessions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### PageSpeed Analytics
+- `PagespeedTest`: Stores individual test results
+- `PagespeedMetric`: Stores specific metrics from tests
+- `PagespeedDistribution`: Stores metric distribution data
 
-## Learn More
+## Environment Setup
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install --force
+   ```
+3. Generate prisma schema type safe
+   ```bash
+   npm run prisma:generate
+   ```
+4. Set up environment variables in `.env`:
+   ```
+   PAGESPEED_API_KEY=your_api_key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+   DATABASE_URL=your_database_url
+   DIRECT_URL=your_direct_database_url
+   ```
+5. Run code base locally
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## Key Features
+1. **User Authentication**
+   - Custom session-based authentication
+   - User repository for database operations
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **PageSpeed Analytics**
+   - Integration with Google PageSpeed Insights API
+   - Performance metric tracking
+   - Distribution analysis
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Dashboard Interface**
+   - Performance metrics visualization
+   - Historical data analysis
+   - Device-specific testing (mobile/desktop)
 
-## Deploy on Vercel
+## Development Guidelines
+1. **Code Style**
+   - Follow TypeScript best practices
+   - Use Prisma for database operations
+   - Implement proper error handling
+   - Write unit tests for critical functionality
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Database Operations**
+   - Use the repository pattern for database access
+   - Implement proper indexing for performance
+   - Follow Prisma best practices for migrations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **API Integration**
+   - Handle API rate limits appropriately
+   - Implement proper error handling
+   - Cache results when possible
+
+## Deployment
+1. **Database**
+   - Supabase provides the PostgreSQL database
+   - Use connection pooling for better performance
+   - Regular backups are handled by Supabase
+
+2. **Application**
+   - Deploy to Vercel or similar platform
+   - Set up proper environment variables
+   - Configure proper CORS settings
+
+## Maintenance
+1. **Regular Tasks**
+   - Monitor API usage and rate limits
+   - Check database performance
+   - Update dependencies regularly
+
+## Additional Resources
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [PageSpeed Insights API Documentation](https://developers.google.com/speed/docs/insights/v5/get-started) 
