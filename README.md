@@ -4,6 +4,7 @@
 The Emma Dashboard is a web application built with Next.js that integrates with Google's PageSpeed Insights API to monitor and analyze website performance metrics. The project uses Supabase for database management and authentication.
 
 ## Tech Stack
+- **Node**: version 20^
 - **Frontend**: Next.js, Tailwind CSS
 - **Backend**: Next.js API Routes
 - **Database**: PostgreSQL (via Supabase)
@@ -19,7 +20,7 @@ emma-dashboard/
 ├── src/
 │   ├── actions/        # Server actions
 │   ├── app/            # Next.js app router pages
-│   ├── components/     # React components
+│   ├── components√/     # React components
 │   ├── features/       # Feature-specific code
 │   ├── lib/           # Utility functions and configurations
 │   ├── types/         # TypeScript type definitions
